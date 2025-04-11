@@ -1,5 +1,3 @@
-// src/components/LoginButtons.tsx
-
 import React from "react";
 import { loginAnonymously, loginWithGoogle, logout } from "../lib/firebase";
 import { auth } from "../lib/firebase";
