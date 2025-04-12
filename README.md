@@ -1,4 +1,4 @@
-# React + TypeScript + Viteで習慣化を促すwEBアプリ作ってみよう
+# React + TypeScript + Viteで習慣化を促すWEBアプリ作ってみよう
 
 ## 目的
 - 学習のため
