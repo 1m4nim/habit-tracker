@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { auth, subscribeAuth } from "./lib/firebase";
 import { HabitList } from "./components/HabitList";
-import LoginButtons from "./components/LoginButtons";
+import Header from "./components/Header"; // ← 追加
 
 function App() {
   const [user, setUser] = useState(auth.currentUser);
@@ -13,8 +13,7 @@ function App() {
 
   return (
     <div>
-      <h1>習慣トラッカー</h1>
-      <LoginButtons />
+      <Header />
       {user && <HabitList />}
     </div>
   );

@@ -1,0 +1,53 @@
+.header {
+  position: fixed; /* ← 画面上に固定 */
+  top: 0; /* ← 上にぴったりくっつける */
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #333;
+  display: flex;
+  justify-content: space-between; /* 左右に分ける */
+  align-items: center;
+  padding: 0 20px;
+  z-index: 1000; /* 上に来るように */
+}
+
+.left {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-left: 20%;
+}
+
+.right {
+  position: relative;
+  margin-right: 20%;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.hamburgerImage {
+  width: 30px;
+  height: 30px;
+}
+
+.dropdownMenu {
+  position: absolute;
+  right: 0;
+  top: 60px; /* headerの高さ分だけ下に */
+  width: 200px;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);
+  display: none;
+}
+
+.dropdownMenu.open {
+  display: block;
+}
+
+.dropdownMenu.closed {
+  display: none;
+}
