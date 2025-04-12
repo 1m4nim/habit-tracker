@@ -1,23 +1,25 @@
 .container {
-  padding: 20px;
-  max-width: 500px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* ← これで縦中央 */
+  min-height: 100vh;
+  padding-top: 80px; /* ← ヘッダーの高さ分だけ下に押す */
+  box-sizing: border-box;
 }
 
 .habitList {
-  text-align: center;
-  font-size: 1.5rem;
-  margin-bottom: 16px;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
 }
 
 .inputArea {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 .input {
-  flex: 1;
   padding: 8px;
   font-size: 1rem;
 }
@@ -25,22 +27,16 @@
 .addButton {
   padding: 8px 16px;
   font-size: 1rem;
-  background-color: #1976d2;
-  color: white;
-  border: none;
   cursor: pointer;
-}
-
-.addButton:hover {
-  background-color: #1565c0;
 }
 
 .list {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .listItem {
-  padding: 8px;
-  border-bottom: 1px solid #ccc;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
 }

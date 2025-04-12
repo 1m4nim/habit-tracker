@@ -1,4 +1,3 @@
-// src/lib/firebase.ts
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -7,6 +6,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   onAuthStateChanged,
+  signOut,
 } from "firebase/auth";
 
 const firebaseConfig = {
@@ -18,28 +18,42 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// Firebase を初期化
 const app = initializeApp(firebaseConfig);
-// 匿名ログイン
-export const loginAnonymously = async () => {
-  await signInAnonymously(auth);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Google ログイン用のプロバイダを作成
+const googleProvider = new GoogleAuthProvider();
+
+// Google ログイン関数
+const loginWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    console.log("Google ログイン成功", result.user);
+  } catch (error) {
+    console.error("Google ログインエラー", error);
+  }
 };
 
-// Googleログイン
-export const loginWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
+// 匿名ログイン関数
+const loginAnonymously = async () => {
+  try {
+    const result = await signInAnonymously(auth);
+    console.log("匿名ログイン成功", result.user);
+  } catch (error) {
+    console.error("匿名ログインエラー", error);
+  }
 };
 
-// ログアウト
-export const logout = async () => {
-  await auth.signOut();
+// ログアウト関数
+const logout = async () => {
+  try {
+    await signOut(auth);
+    console.log("ログアウト成功");
+  } catch (error) {
+    console.error("ログアウトエラー", error);
+  }
 };
 
-// ユーザーの状態監視（使う場合）
-export const subscribeAuth = (callback: (user: any) => void) => {
-  return onAuthStateChanged(auth, callback);
-};
-export const db = getFirestore(app);
-export const auth = getAuth(app);
-
-console.log("API KEY:", import.meta.env.VITE_FIREBASE_API_KEY);
+export { auth, loginWithGoogle, loginAnonymously, logout, db };
