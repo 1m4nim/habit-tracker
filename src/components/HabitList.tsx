@@ -1,141 +1,155 @@
-// HabitList.tsx
 import React, { useEffect, useState } from "react";
-import { addHabit, getHabits, updateHabitCompletedDates } from "../lib/habit";
+import {
+  addHabit,
+  getHabits,
+  updateHabitCompletedDates,
+  deleteHabit,
+} from "../lib/habit";
 import { Habit } from "../types/Habit";
 import { format } from "date-fns";
-import Modal from "./Modal"; // モーダルをインポート
+import Modal from "./Modal";
 
-import "./HabitList.module.css";
+import styles from "./HabitList.module.css"; // CSS Modules を使っている前提
 
 const STORAGE_KEY = "habits";
 
 const HabitList: React.FC = () => {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [newTitle, setNewTitle] = useState("");
-  const [showModal, setShowModal] = useState(false); // モーダルの表示状態を管理
-  const [habitToComplete, setHabitToComplete] = useState<Habit | null>(null); // 完了ボタンを押した習慣を保持
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState<"complete" | "delete" | null>(
+    null
+  );
+  const [targetHabit, setTargetHabit] = useState<Habit | null>(null);
 
   const today = format(new Date(), "yyyy-MM-dd");
 
   useEffect(() => {
-    const fetchFromFirestore = async () => {
-      const data = await getHabits();
-      setHabits(data);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const initializeHabits = async () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            setHabits(parsed);
+          }
+        } catch (e) {
+          console.error("ローカルストレージの読み込みに失敗:", e);
+        }
+      }
+
+      await loadHabitsFromFirestore();
     };
 
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setHabits(parsed);
-        }
-      } catch (e) {
-        console.error("ローカルストレージの読み込みに失敗:", e);
-      }
-    }
-
-    fetchFromFirestore();
+    initializeHabits();
   }, []);
 
-  const handleAdd = async () => {
+  const loadHabitsFromFirestore = async () => {
+    const data = await getHabits();
+    setHabits(data);
+    syncLocalStorage(data);
+  };
+
+  const syncLocalStorage = (data: Habit[]) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  };
+
+  const addNewHabit = async () => {
     if (newTitle.trim() === "") return;
 
-    const tempHabit: Habit = {
-      id: Math.random().toString(),
-      title: newTitle,
-      createdAt: new Date(),
-      completedDates: [],
-    };
-
-    const updatedLocal = [...habits, tempHabit];
-    setHabits(updatedLocal);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLocal));
-
     await addHabit(newTitle);
-    const updatedFromFirestore = await getHabits();
-    setHabits(updatedFromFirestore);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFromFirestore));
+    await loadHabitsFromFirestore();
 
     setNewTitle("");
   };
 
-  const handleToggleComplete = async (habit: Habit) => {
-    // モーダルを表示して確認を行う
-    setHabitToComplete(habit);
+  const markAsCompleted = async () => {
+    if (!targetHabit) return;
+
+    const updatedDates = [...targetHabit.completedDates, today];
+    await updateHabitCompletedDates(targetHabit.id!, updatedDates);
+
+    const updatedHabits = habits.map((h) =>
+      h.id === targetHabit.id ? { ...h, completedDates: updatedDates } : h
+    );
+
+    setHabits(updatedHabits);
+    syncLocalStorage(updatedHabits);
+    closeModal();
+  };
+
+  const deleteTargetHabit = async () => {
+    if (!targetHabit) return;
+
+    await deleteHabit(targetHabit.id!);
+
+    const updatedHabits = habits.filter((h) => h.id !== targetHabit.id);
+    setHabits(updatedHabits);
+    syncLocalStorage(updatedHabits);
+    closeModal();
+  };
+
+  const openModal = (habit: Habit, type: "complete" | "delete") => {
+    setTargetHabit(habit);
+    setModalType(type);
     setShowModal(true);
   };
 
-  const handleConfirmCompletion = async () => {
-    if (!habitToComplete) return;
-
-    // 完了日を更新
-    const updated = {
-      ...habitToComplete,
-      completedDates: [...habitToComplete.completedDates, today],
-    };
-
-    // Firestoreとローカルストレージを更新
-    await updateHabitCompletedDates(
-      habitToComplete.id!,
-      updated.completedDates
-    );
-
-    const newHabits = habits.map((h) =>
-      h.id === habitToComplete.id ? updated : h
-    );
-    setHabits(newHabits);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newHabits));
-
-    // 完了後にモーダルを閉じる
-    setHabitToComplete(null);
+  const closeModal = () => {
     setShowModal(false);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false); // モーダルを閉じる
+    setTargetHabit(null);
+    setModalType(null);
   };
 
   return (
-    <div className="container">
-      <h2 className="habitList">📋 習慣リスト</h2>
+    <div className={styles.container}>
+      <h2 className={styles.habitList}>📋 習慣リスト</h2>
 
-      <div className="habitSection">
-        <div className="inputArea">
+      <div className={styles.habitSection}>
+        <div className={styles.inputArea}>
           <input
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder="新しい習慣を入力"
-            className="input"
+            className={styles.input}
           />
-          <button onClick={handleAdd} className="addButton">
+          <button onClick={addNewHabit} className={styles.addButton}>
             追加
           </button>
         </div>
 
-        <ul className="list">
+        <ul className={styles.list}>
           {habits.map((habit) => {
             const isCompletedToday = habit.completedDates.includes(today);
 
             return (
-              <li key={habit.id} className="listItem">
+              <li key={habit.id} className={styles.listItem}>
                 <span>🔵</span>
                 <span>{habit.title}</span>
+
                 <button
-                  onClick={() => handleToggleComplete(habit)}
+                  onClick={() => openModal(habit, "complete")}
                   disabled={isCompletedToday}
-                  className="completeButton"
+                  className={styles.completeButton}
                   style={{
                     marginLeft: "auto",
                     backgroundColor: isCompletedToday
                       ? "lightgray"
-                      : "lightgreen",
+                      : "lightblue",
+                    color: "black",
                     cursor: isCompletedToday ? "default" : "pointer",
+                    marginRight: "8px",
                   }}
                 >
                   {isCompletedToday ? "完了！" : "今日やる！"}
+                </button>
+
+                <button
+                  onClick={() => openModal(habit, "delete")}
+                  className={styles.deleteButton}
+                >
+                  削除
                 </button>
               </li>
             );
@@ -143,12 +157,17 @@ const HabitList: React.FC = () => {
         </ul>
       </div>
 
-      {/* モーダル表示 */}
       {showModal && (
         <Modal
-          message="本当にやりましたか？"
-          onConfirm={handleConfirmCompletion}
-          onCancel={handleCloseModal}
+          message={
+            modalType === "complete"
+              ? "本当にやりましたか？"
+              : "本当に削除しますか？"
+          }
+          onConfirm={
+            modalType === "complete" ? markAsCompleted : deleteTargetHabit
+          }
+          onCancel={closeModal}
         />
       )}
     </div>

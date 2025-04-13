@@ -5,13 +5,14 @@
   min-height: 100vh;
   padding-top: 80px;
   box-sizing: border-box;
-  background-color: rgb(32, 32, 124);
-  color: white;
+  background-color: rgb(53, 53, 160);
+  color: black;
 }
 
 .habitList {
   font-size: 1.6rem;
   margin-bottom: 20px;
+  color: white;
 }
 
 .inputArea {
@@ -53,7 +54,7 @@
 }
 
 .habitSection {
-  background-color: aqua; /* ← 好きな色に変更してね */
+  background-color: rgb(97, 134, 182);
   padding: 20px;
   border-radius: 8px;
   width: 100%;

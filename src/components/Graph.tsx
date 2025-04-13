@@ -9,7 +9,6 @@ type Props = {
 export default function GraphButton({ userIds }: Props) {
   return (
     <>
-      {/* 📊 固定ボタン */}
       <button
         style={{
           position: "fixed",
@@ -23,13 +22,12 @@ export default function GraphButton({ userIds }: Props) {
           padding: "12px 16px",
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
           cursor: "pointer",
-          fontSize: "16px", // ボタンの文字サイズを少し大きくして視認性を高める
+          fontSize: "16px",
         }}
       >
         📊 グラフを見る
       </button>
 
-      {/* 📈 グラフパネル */}
       <div
         style={{
           position: "fixed",

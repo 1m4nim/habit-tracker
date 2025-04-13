@@ -1,5 +1,5 @@
 body {
-  background-color: rgb(135, 135, 197);
+  background-color: rgb(154, 154, 214);
   color: rgb(8, 8, 109);
   margin: 0;
   padding: 0;
@@ -7,5 +7,5 @@ body {
 }
 
 #root {
-  min-height: 100vh; /* 画面全体をカバーする */
+  min-height: 100vh;
 }
