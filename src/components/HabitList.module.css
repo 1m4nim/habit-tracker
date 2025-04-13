@@ -2,10 +2,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* ← これで縦中央 */
   min-height: 100vh;
-  padding-top: 80px; /* ← ヘッダーの高さ分だけ下に押す */
+  padding-top: 80px;
   box-sizing: border-box;
+  background-color: rgb(32, 32, 124);
+  color: white;
 }
 
 .habitList {
@@ -34,9 +35,47 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  width: 100%;
+  max-width: 400px;
 }
 
 .listItem {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
   margin-bottom: 8px;
+  border-radius: 4px;
   font-size: 1.1rem;
+  gap: 8px;
+}
+
+.habitSection {
+  background-color: aqua; /* ← 好きな色に変更してね */
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  margin-bottom: 40px;
+}
+
+.completeButton {
+  margin-left: auto;
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.completeButton:hover {
+  background-color: #0f6414;
+}
+
+.completeButton:disabled {
+  background-color: lightgray;
+  cursor: default;
 }

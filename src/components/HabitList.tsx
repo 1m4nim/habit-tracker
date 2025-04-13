@@ -1,35 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { addHabit, getHabits } from "../lib/habit";
+import { addHabit, getHabits, updateHabitCompletedDates } from "../lib/habit";
 import { Habit } from "../types/Habit";
+import { format } from "date-fns";
+import Modal from "./Modal"; // モーダルをインポート
+
+import "./HabitList.module.css";
 
 const STORAGE_KEY = "habits";
 
 const HabitList: React.FC = () => {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [newTitle, setNewTitle] = useState("");
+  const [showModal, setShowModal] = useState(false); // モーダルの表示状態を管理
+  const [habitToComplete, setHabitToComplete] = useState<Habit | null>(null); // 完了ボタンを押した習慣を保持
+
+  const today = format(new Date(), "yyyy-MM-dd");
 
   useEffect(() => {
-    // Firestoreからデータを取得
     const fetchFromFirestore = async () => {
       const data = await getHabits();
       setHabits(data);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); // Firestoreからデータ取得後にローカルストレージに保存
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     };
 
-    // ローカルストレージからデータを取得して表示
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          setHabits(parsed); // ローカルストレージからデータを設定
+          setHabits(parsed);
         }
       } catch (e) {
         console.error("ローカルストレージの読み込みに失敗:", e);
       }
     }
 
-    fetchFromFirestore(); // Firestoreからデータを非同期で取得
+    fetchFromFirestore();
   }, []);
 
   const handleAdd = async () => {
@@ -42,38 +48,105 @@ const HabitList: React.FC = () => {
       completedDates: [],
     };
 
-    // ローカルストレージに新しい習慣を追加
     const updatedLocal = [...habits, tempHabit];
     setHabits(updatedLocal);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLocal));
 
     await addHabit(newTitle);
-
-    // Firestoreからデータを更新
     const updatedFromFirestore = await getHabits();
     setHabits(updatedFromFirestore);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFromFirestore));
 
-    setNewTitle(""); // 入力フィールドをクリア
+    setNewTitle("");
+  };
+
+  const handleToggleComplete = async (habit: Habit) => {
+    // モーダルを表示して確認を行う
+    setHabitToComplete(habit);
+    setShowModal(true);
+  };
+
+  const handleConfirmCompletion = async () => {
+    if (!habitToComplete) return;
+
+    // 完了日を更新
+    const updated = {
+      ...habitToComplete,
+      completedDates: [...habitToComplete.completedDates, today],
+    };
+
+    await updateHabitCompletedDates(
+      habitToComplete.id!,
+      updated.completedDates
+    );
+
+    const newHabits = habits.map((h) =>
+      h.id === habitToComplete.id ? updated : h
+    );
+    setHabits(newHabits);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newHabits));
+
+    setHabitToComplete(null);
+    setShowModal(false); // モーダルを閉じる
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false); // モーダルを閉じる
   };
 
   return (
-    <div style={{ marginTop: "3rem" }}>
-      <h2>📋 習慣リスト</h2>
-      <div>
-        <input
-          type="text"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          placeholder="新しい習慣を入力"
-        />
-        <button onClick={handleAdd}>追加</button>
+    <div className="container">
+      <h2 className="habitList">📋 習慣リスト</h2>
+
+      <div className="habitSection">
+        <div className="inputArea">
+          <input
+            type="text"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            placeholder="新しい習慣を入力"
+            className="input"
+          />
+          <button onClick={handleAdd} className="addButton">
+            追加
+          </button>
+        </div>
+
+        <ul className="list">
+          {habits.map((habit) => {
+            const isCompletedToday = habit.completedDates.includes(today);
+
+            return (
+              <li key={habit.id} className="listItem">
+                <span>🟢</span>
+                <span>{habit.title}</span>
+                <button
+                  onClick={() => handleToggleComplete(habit)}
+                  disabled={isCompletedToday}
+                  className="completeButton"
+                  style={{
+                    marginLeft: "auto",
+                    backgroundColor: isCompletedToday
+                      ? "lightgray"
+                      : "lightgreen",
+                    cursor: isCompletedToday ? "default" : "pointer",
+                  }}
+                >
+                  {isCompletedToday ? "今日済み" : "今日やる！"}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
-      <ul style={{ marginTop: "1rem" }}>
-        {habits.map((habit) => (
-          <li key={habit.id}>🟢 {habit.title}</li>
-        ))}
-      </ul>
+
+      {/* モーダル表示 */}
+      {showModal && (
+        <Modal
+          message="本当にやりましたか？"
+          onClose={handleConfirmCompletion} // 完了を確定するボタン
+        />
+      )}
     </div>
   );
 };
