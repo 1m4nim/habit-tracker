@@ -1,3 +1,4 @@
+// HabitList.tsx
 import React, { useEffect, useState } from "react";
 import { addHabit, getHabits, updateHabitCompletedDates } from "../lib/habit";
 import { Habit } from "../types/Habit";
@@ -75,6 +76,7 @@ const HabitList: React.FC = () => {
       completedDates: [...habitToComplete.completedDates, today],
     };
 
+    // Firestoreとローカルストレージを更新
     await updateHabitCompletedDates(
       habitToComplete.id!,
       updated.completedDates
@@ -86,8 +88,9 @@ const HabitList: React.FC = () => {
     setHabits(newHabits);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newHabits));
 
+    // 完了後にモーダルを閉じる
     setHabitToComplete(null);
-    setShowModal(false); // モーダルを閉じる
+    setShowModal(false);
   };
 
   const handleCloseModal = () => {
@@ -118,7 +121,7 @@ const HabitList: React.FC = () => {
 
             return (
               <li key={habit.id} className="listItem">
-                <span>🟢</span>
+                <span>🔵</span>
                 <span>{habit.title}</span>
                 <button
                   onClick={() => handleToggleComplete(habit)}
@@ -132,7 +135,7 @@ const HabitList: React.FC = () => {
                     cursor: isCompletedToday ? "default" : "pointer",
                   }}
                 >
-                  {isCompletedToday ? "今日済み" : "今日やる！"}
+                  {isCompletedToday ? "完了！" : "今日やる！"}
                 </button>
               </li>
             );
@@ -144,7 +147,8 @@ const HabitList: React.FC = () => {
       {showModal && (
         <Modal
           message="本当にやりましたか？"
-          onClose={handleConfirmCompletion} // 完了を確定するボタン
+          onConfirm={handleConfirmCompletion}
+          onCancel={handleCloseModal}
         />
       )}
     </div>
