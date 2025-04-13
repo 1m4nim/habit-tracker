@@ -1,5 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where,
+  Timestamp,
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import {
   signInAnonymously,
@@ -56,4 +63,15 @@ const logout = async () => {
   }
 };
 
-export { auth, loginWithGoogle, loginAnonymously, logout, db };
+export {
+  auth,
+  loginWithGoogle,
+  loginAnonymously,
+  logout,
+  db,
+  collection,
+  getDocs,
+  query,
+  where,
+  Timestamp,
+};
