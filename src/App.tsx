@@ -7,6 +7,7 @@ import {
 } from "./lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import HabitList from "./components/HabitList";
+import GraphButton from "./components/GraphButton";
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -25,7 +26,8 @@ const App: React.FC = () => {
 
   return (
     <div style={{ textAlign: "center", paddingTop: "1rem" }}>
-      <h1 style={{ margin: 0 }}> My Habits</h1>
+      <h1 style={{ margin: 0 }}>My Habits</h1>
+
       {!user ? (
         <div style={{ marginTop: "3rem" }}>
           <p>ログインして習慣を管理しましょう</p>
@@ -37,6 +39,8 @@ const App: React.FC = () => {
           <p>ログイン中: {user.displayName || "匿名ユーザー"}</p>
           <button onClick={logout}>ログアウト</button>
           <HabitList />
+          {/* ログインしている場合はGraphButtonを表示 */}
+          <GraphButton userIds={[user.uid]} />
         </>
       )}
     </div>

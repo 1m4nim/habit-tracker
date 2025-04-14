@@ -16,7 +16,7 @@ export default function GraphButton({ userIds }: Props) {
           position: "fixed",
           bottom: "20px",
           right: "20px",
-          zIndex: 1000, // 高い値にして他の要素に隠れないようにする
+          zIndex: 1000,
           backgroundColor: "#4caf50",
           color: "white",
           border: "none",
@@ -44,11 +44,14 @@ export default function GraphButton({ userIds }: Props) {
             boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
             zIndex: 999,
             padding: "12px",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <h3 style={{ marginBottom: "8px" }}>1週間の完了率</h3>
-          <div style={{ height: "100%" }}></div>
-          <WeeklyGraph userIds={userIds} />
+          <div style={{ flex: 1 }}>
+            <WeeklyGraph userIds={userIds} />
+          </div>
         </div>
       )}
     </>

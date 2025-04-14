@@ -9,11 +9,16 @@ import { Habit } from "../types/Habit";
 import { format } from "date-fns";
 import Modal from "./Modal";
 
-import styles from "./HabitList.module.css"; // CSS Modules を使っている前提
+import styles from "./HabitList.module.css";
 
 const STORAGE_KEY = "habits";
 
-const HabitList: React.FC = () => {
+type HabitListProps = {
+  onComplete: () => void;
+  userIds: string[];
+};
+
+const HabitList: React.FC<HabitListProps> = ({ onComplete, userIds }) => {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -37,11 +42,24 @@ const HabitList: React.FC = () => {
           console.error("ローカルストレージの読み込みに失敗:", e);
         }
       }
-
       await loadHabitsFromFirestore();
     };
 
     initializeHabits();
+
+    const resetAtMidnight = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      if (hours === 0 && minutes === 0) {
+        resetHabits();
+      }
+    };
+
+    const intervalId = setInterval(resetAtMidnight, 60000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const loadHabitsFromFirestore = async () => {
@@ -59,7 +77,6 @@ const HabitList: React.FC = () => {
 
     await addHabit(newTitle);
     await loadHabitsFromFirestore();
-
     setNewTitle("");
   };
 
@@ -76,6 +93,8 @@ const HabitList: React.FC = () => {
     setHabits(updatedHabits);
     syncLocalStorage(updatedHabits);
     closeModal();
+
+    onComplete();
   };
 
   const deleteTargetHabit = async () => {
@@ -99,6 +118,16 @@ const HabitList: React.FC = () => {
     setShowModal(false);
     setTargetHabit(null);
     setModalType(null);
+  };
+
+  const resetHabits = () => {
+    const updatedHabits = habits.map((habit) => ({
+      ...habit,
+      completedDates: [],
+    }));
+
+    setHabits(updatedHabits);
+    syncLocalStorage(updatedHabits);
   };
 
   return (
@@ -165,9 +194,42 @@ const HabitList: React.FC = () => {
               : "本当に削除しますか？"
           }
           onConfirm={
-            modalType === "complete" ? markAsCompleted : deleteTargetHabit
+            modalType === "complete"
+              ? () => {
+                  markAsCompleted();
+                  closeModal();
+                }
+              : deleteTargetHabit
           }
           onCancel={closeModal}
+          customButtons={
+            modalType === "complete" && (
+              <div>
+                <button
+                  style={{
+                    backgroundColor: "green",
+                    color: "white",
+                    borderRadius: "8px",
+                    fontSize: "16PX",
+                  }}
+                  onClick={() => {
+                    markAsCompleted();
+                    closeModal();
+                  }}
+                  className={styles.confirmButton}
+                >
+                  はい
+                </button>
+                <button
+                  style={{ borderRadius: "8PX", fontSize: "16px" }}
+                  onClick={closeModal}
+                  className={styles.cancelButton}
+                >
+                  いいえ
+                </button>
+              </div>
+            )
+          }
         />
       )}
     </div>
