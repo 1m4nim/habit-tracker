@@ -7,15 +7,17 @@ import {
   where,
   Timestamp,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import {
+  getAuth,
   signInAnonymously,
   signInWithPopup,
   GoogleAuthProvider,
   onAuthStateChanged,
   signOut,
+  User,
 } from "firebase/auth";
 
+// Firebase 初期化
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -25,36 +27,39 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Firebase を初期化
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Google ログイン用のプロバイダを作成
+// Google プロバイダ
 const googleProvider = new GoogleAuthProvider();
 
-// Google ログイン関数
-const loginWithGoogle = async () => {
+// ログイン（Google）
+export const loginWithGoogle = async (): Promise<string | null> => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     console.log("Google ログイン成功", result.user);
+    return result.user.uid;
   } catch (error) {
     console.error("Google ログインエラー", error);
+    return null;
   }
 };
 
-// 匿名ログイン関数
-const loginAnonymously = async () => {
+// ログイン（匿名）
+export const loginAnonymously = async (): Promise<string | null> => {
   try {
     const result = await signInAnonymously(auth);
     console.log("匿名ログイン成功", result.user);
+    return result.user.uid;
   } catch (error) {
     console.error("匿名ログインエラー", error);
+    return null;
   }
 };
 
-// ログアウト関数
-const logout = async () => {
+// ログアウト
+export const logout = async () => {
   try {
     await signOut(auth);
     console.log("ログアウト成功");
@@ -63,15 +68,38 @@ const logout = async () => {
   }
 };
 
-export {
-  auth,
-  loginWithGoogle,
-  loginAnonymously,
-  logout,
-  db,
-  collection,
-  getDocs,
-  query,
-  where,
-  Timestamp,
+// 現在のユーザーIDを取得
+export const getCurrentUserId = (): string | null => {
+  const user = auth.currentUser;
+  return user ? user.uid : null;
 };
+
+// ユーザー状態の監視
+export const onUserStateChange = (
+  callback: (userId: string | null, user: User | null) => void
+) => {
+  return onAuthStateChanged(auth, (user) => {
+    callback(user ? user.uid : null, user);
+  });
+};
+
+// 習慣データの取得（ユーザーIDごと）
+export const getHabits = async (userId: string): Promise<Habit[]> => {
+  const q = query(collection(db, "habits"), where("userId", "==", userId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Habit[];
+};
+
+// 型定義（必要なら共通化してもOK）
+export type Habit = {
+  id: string;
+  title: string;
+  completedDates: string[];
+  userId: string;
+};
+
+// 必要なものをエクスポート
+export { auth, db, collection, getDocs, query, where, Timestamp };

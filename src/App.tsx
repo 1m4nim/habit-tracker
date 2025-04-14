@@ -7,12 +7,15 @@ import {
 } from "./lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import HabitList from "./components/HabitList";
+import { addHabit } from "./lib/habit";
 import GraphButton from "./components/GraphButton";
+
+// `Habit`型のインポート
+import { Habit } from "./components/HabitDashboard";
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
   const [refreshKey, setRefreshKey] = useState(false);
 
   const triggerRefresh = () => {
@@ -46,8 +49,10 @@ const App: React.FC = () => {
           <button onClick={logout}>ログアウト</button>
 
           {/* userIds に user.uid を渡す */}
-          <HabitList userIds={[user.uid]} />
-
+          <HabitList
+            userIds={[user.uid]}
+            onComplete={() => console.log("ばっちり！")}
+          />
           <GraphButton userIds={[user.uid]} />
         </>
       )}

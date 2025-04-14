@@ -6,6 +6,8 @@ import {
   doc,
   deleteDoc,
   serverTimestamp,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { Habit } from "../types/Habit";
@@ -56,4 +58,22 @@ export const addCompletedDate = async (userId: string) => {
     userId,
     createdAt: serverTimestamp(),
   });
+};
+
+export const getAllCompletedDates = async (
+  userId: string
+): Promise<Habit[]> => {
+  const habitsRef = collection(db, "habits");
+  const q = query(habitsRef, where("userId", "==", userId));
+  const querySnapshot = await getDocs(q);
+
+  const habits: Habit[] = [];
+  querySnapshot.forEach((doc) => {
+    habits.push({
+      id: doc.id,
+      ...(doc.data() as Omit<Habit, "id">),
+    });
+  });
+
+  return habits;
 };
