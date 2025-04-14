@@ -125,6 +125,8 @@ const WeeklyGraph = ({ userIds, refreshKey }: Props) => {
     return <div>データを読み込み中...</div>;
   }
 
+  <WeeklyGraph userIds={userIds} refreshKey={refreshKey} />;
+
   return (
     <div style={{ width: "100%", height: "100%" }}>
       <ResponsiveContainer width="100%" height="100%">

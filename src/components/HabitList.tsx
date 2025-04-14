@@ -4,18 +4,18 @@ import {
   getHabits,
   updateHabitCompletedDates,
   deleteHabit,
+  addCompletedDate,
 } from "../lib/habit";
 import { Habit } from "../types/Habit";
 import { format } from "date-fns";
 import Modal from "./Modal";
-
 import styles from "./HabitList.module.css";
 
 const STORAGE_KEY = "habits";
 
 type HabitListProps = {
   onComplete: () => void;
-  userIds: string[];
+  userIds: string[]; // ← Firestoreに保存するためにユーザーIDを受け取る
 };
 
 const HabitList: React.FC<HabitListProps> = ({ onComplete, userIds }) => {
@@ -75,7 +75,7 @@ const HabitList: React.FC<HabitListProps> = ({ onComplete, userIds }) => {
   const addNewHabit = async () => {
     if (newTitle.trim() === "") return;
 
-    await addHabit(newTitle);
+    await addHabit(newTitle, userIds[0]); // ← userIdを渡す
     await loadHabitsFromFirestore();
     setNewTitle("");
   };
@@ -86,6 +86,9 @@ const HabitList: React.FC<HabitListProps> = ({ onComplete, userIds }) => {
     const updatedDates = [...targetHabit.completedDates, today];
     await updateHabitCompletedDates(targetHabit.id!, updatedDates);
 
+    // Firestoreに完了記録を追加
+    await addCompletedDate(targetHabit.userId); // ← userIdが必須！
+
     const updatedHabits = habits.map((h) =>
       h.id === targetHabit.id ? { ...h, completedDates: updatedDates } : h
     );
@@ -94,7 +97,7 @@ const HabitList: React.FC<HabitListProps> = ({ onComplete, userIds }) => {
     syncLocalStorage(updatedHabits);
     closeModal();
 
-    onComplete();
+    onComplete(); // グラフなどを更新するためのコールバック
   };
 
   const deleteTargetHabit = async () => {
@@ -194,12 +197,7 @@ const HabitList: React.FC<HabitListProps> = ({ onComplete, userIds }) => {
               : "本当に削除しますか？"
           }
           onConfirm={
-            modalType === "complete"
-              ? () => {
-                  markAsCompleted();
-                  closeModal();
-                }
-              : deleteTargetHabit
+            modalType === "complete" ? markAsCompleted : deleteTargetHabit
           }
           onCancel={closeModal}
           customButtons={
@@ -212,10 +210,7 @@ const HabitList: React.FC<HabitListProps> = ({ onComplete, userIds }) => {
                     borderRadius: "8px",
                     fontSize: "16PX",
                   }}
-                  onClick={() => {
-                    markAsCompleted();
-                    closeModal();
-                  }}
+                  onClick={markAsCompleted}
                   className={styles.confirmButton}
                 >
                   はい

@@ -5,6 +5,7 @@ import {
   updateDoc,
   doc,
   deleteDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { Habit } from "../types/Habit";
@@ -13,14 +14,16 @@ import { Habit } from "../types/Habit";
 const habitsCollection = collection(db, "habits");
 
 // 🔹 新しい習慣を追加
-export const addHabit = async (title: string) => {
-  const newHabit: Omit<Habit, "id"> = {
+
+export const addHabit = async (title: string, userId: string) => {
+  const habit = {
     title,
-    createdAt: new Date(),
     completedDates: [],
+    userId,
   };
 
-  await addDoc(habitsCollection, newHabit);
+  const docRef = await addDoc(collection(db, "habits"), habit);
+  return { id: docRef.id, ...habit };
 };
 
 // 🔹 習慣の一覧を取得
@@ -45,4 +48,12 @@ export const updateHabitCompletedDates = async (
 export const deleteHabit = async (id: string) => {
   const habitRef = doc(db, "habits", id);
   await deleteDoc(habitRef);
+};
+
+// 完了情報を保存する処理
+export const addCompletedDate = async (userId: string) => {
+  await addDoc(collection(db, "completedDates"), {
+    userId,
+    createdAt: serverTimestamp(),
+  });
 };

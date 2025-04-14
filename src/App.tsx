@@ -13,6 +13,12 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [refreshKey, setRefreshKey] = useState(false);
+
+  const triggerRefresh = () => {
+    setRefreshKey((prev) => !prev); // true/falseを切り替えて再描画を促す
+  };
+
   // ユーザーのログイン状態を監視
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -38,8 +44,11 @@ const App: React.FC = () => {
         <>
           <p>ログイン中: {user.displayName || "匿名ユーザー"}</p>
           <button onClick={logout}>ログアウト</button>
-          <HabitList />
-          {/* ログインしている場合はGraphButtonを表示 */}
+
+          {/* userIds に user.uid を渡す */}
+          <HabitList userIds={[user.uid]} />
+
+          {/* GraphButton は既に userIds を渡しているのでOK */}
           <GraphButton userIds={[user.uid]} />
         </>
       )}
