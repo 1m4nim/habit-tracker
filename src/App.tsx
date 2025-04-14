@@ -7,7 +7,7 @@ import {
 } from "./lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import HabitList from "./components/HabitList";
-import { addHabit } from "./lib/habit";
+import { addHabit, getHabits } from "./lib/habit";
 import GraphButton from "./components/GraphButton";
 
 // `Habit`型のインポート
@@ -16,17 +16,22 @@ import { Habit } from "./components/HabitDashboard";
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(false);
+  const [habits, setHabits] = useState<Habit[]>([]); // habitsのステートを追加
+  const [refreshKey, setRefreshKey] = useState(false); // グラフ更新用のキー
 
   const triggerRefresh = () => {
-    setRefreshKey((prev) => !prev); // true/falseを切り替えて再描画を促す
+    setRefreshKey((prev) => !prev); // refreshKeyを切り替えて再描画
   };
 
   // ユーザーのログイン状態を監視
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setIsLoading(false);
+      if (currentUser) {
+        const habitsData = await getHabits(currentUser.uid); // Firestoreから習慣を取得
+        setHabits(habitsData); // 取得した習慣をステートに保存
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -48,12 +53,16 @@ const App: React.FC = () => {
           <p>ログイン中: {user.displayName || "匿名ユーザー"}</p>
           <button onClick={logout}>ログアウト</button>
 
-          {/* userIds に user.uid を渡す */}
+          {/* HabitListに習慣データを渡す */}
           <HabitList
+            habits={habits} // ここで習慣データを渡す
             userIds={[user.uid]}
             onComplete={() => console.log("ばっちり！")}
           />
-          <GraphButton userIds={[user.uid]} />
+          <GraphButton
+            userIds={[user.uid]}
+            refreshKey={refreshKey} // グラフ更新のためにrefreshKeyを渡す
+          />
         </>
       )}
     </div>
