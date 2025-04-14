@@ -48,7 +48,6 @@ const App: React.FC = () => {
           {/* userIds に user.uid を渡す */}
           <HabitList userIds={[user.uid]} />
 
-          {/* GraphButton は既に userIds を渡しているのでOK */}
           <GraphButton userIds={[user.uid]} />
         </>
       )}
