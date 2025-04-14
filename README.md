@@ -18,3 +18,10 @@
 - スマホにも対応したい
 
 とりあえずそんなところです。また進捗あったらREADME書いていきますね
+
+
+### 現在（2025/04/13）
+![image](https://github.com/user-attachments/assets/4b90967a-aeaf-470e-99e2-a170136d64bf)
+![image](https://github.com/user-attachments/assets/93622d4d-4034-4eec-8431-5ef014b66306)
+![image](https://github.com/user-attachments/assets/7331f1f1-f6a3-4c3c-8d54-81ac27745a63)
+![image](https://github.com/user-attachments/assets/0f1e85b8-88c2-4497-bb67-c18d6bb0be07)
