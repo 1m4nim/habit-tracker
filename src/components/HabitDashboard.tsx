@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { getHabits, addHabit, getCurrentUserId } from "../lib/firebase";
 import HabitList from "./HabitList";
 import WeeklyGraph from "./WeeklyGraph";
-import { Timestamp } from "firebase/firestore"; // Timestamp型のインポート
+import { Timestamp } from "firebase/firestore";
 
-// Habit型の定義。Firestoreから取得するデータと一致させる。
+// Firestoreの習慣データ型
 export type Habit = {
   id: string;
   title: string;
@@ -14,83 +14,111 @@ export type Habit = {
 };
 
 const HabitDashboard = () => {
-  // ステートの初期化
-  const [habits, setHabits] = useState<Habit[]>([]); // 習慣の一覧
-  const [newTitle, setNewTitle] = useState(""); // 新しい習慣のタイトル
-  const [refreshGraph, setRefreshGraph] = useState(false); // グラフを再描画するためのトリガー
-  const [userId, setUserId] = useState<string | null>(null); // ユーザーID（ログイン状態によって変化）
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [newTitle, setNewTitle] = useState("");
+  const [refreshGraph, setRefreshGraph] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 初期化時にユーザーIDを取得して、そのIDに紐づく習慣を取得
   useEffect(() => {
-    const uid = getCurrentUserId(); // 現在のユーザーIDを取得
+    const uid = getCurrentUserId();
     if (uid) {
-      setUserId(uid); // ユーザーIDをステートにセット
-      fetchHabits(uid); // ユーザーIDに基づいて習慣を取得
+      setUserId(uid);
+      fetchHabits(uid);
     }
-  }, []); // 初回マウント時に実行
+  }, []);
 
-  // ユーザーIDに基づいて習慣をFirestoreから取得
   const fetchHabits = async (uid: string) => {
-    const habitsFromFirestore = await getHabits(uid); // Firestoreから習慣を取得
+    const habitsFromFirestore = await getHabits(uid);
 
-    // `createdAt`をFirestoreのTimestampからDateに変換する処理
     const formattedHabits = habitsFromFirestore.map((habit: any) => ({
       ...habit,
       createdAt:
         habit.createdAt instanceof Timestamp
           ? habit.createdAt.toDate()
-          : habit.createdAt, // FirestoreのTimestampをDate型に変換
+          : habit.createdAt,
     }));
 
-    setHabits(formattedHabits); // 取得した習慣をステートに保存
+    setHabits(formattedHabits);
   };
 
-  // 新しい習慣を追加する関数
   const handleAddHabit = async () => {
-    const trimmedTitle = newTitle.trim(); // タイトルの前後の空白を削除
-    if (!trimmedTitle || !userId) return; // タイトルが空だったり、ユーザーIDがなければ何もしない
+    const trimmedTitle = newTitle.trim();
+    if (!trimmedTitle || !userId) return;
 
-    // 新しい習慣をFirestoreに追加
     await addHabit(trimmedTitle, userId);
-    await fetchHabits(userId); // 習慣を再度取得してリストを更新
-    setNewTitle(""); // 入力フィールドをクリア
+    await fetchHabits(userId);
+    setNewTitle("");
   };
 
-  // グラフ更新用のトリガー（例えば習慣を完了した際にグラフを更新する）
   const triggerGraphRefresh = () => {
-    setRefreshGraph((prev) => !prev); // 現在の状態を反転させてグラフを再描画
+    setRefreshGraph((prev) => !prev);
   };
 
-  // ユーザーがログインしていない場合はログインを促すメッセージを表示
   if (!userId) return <div>ログインしてください...</div>;
 
   return (
     <div style={{ border: "2px solid #ccc", padding: "20px" }}>
-      {/* 1週間の完了率を表示するセクション */}
       <h2>✅ 1週間の完了率</h2>
-      <div style={{ height: "300px", marginBottom: "20px" }}>
-        {/* WeeklyGraphコンポーネント：グラフにユーザーIDと更新トリガーを渡す */}
-        <WeeklyGraph userIds={[userId]} refreshKey={refreshGraph} />
-      </div>
 
-      {/* 新しい習慣を追加するフォーム */}
-      <div style={{ marginBottom: "20px" }}>
+      <button onClick={() => setIsModalOpen(true)}>📊 グラフを見る</button>
+
+      {isModalOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "10px",
+              width: "90%",
+              maxWidth: "800px",
+              maxHeight: "90%",
+              overflowY: "auto",
+            }}
+          >
+            <h3 style={{ textAlign: "center" }}>📈 達成率グラフ</h3>
+            <div style={{ height: "300px" }}>
+              <WeeklyGraph
+                userIds={[userId]}
+                habitIds={habits.map((habit) => habit.id)}
+                refreshKey={refreshGraph}
+              />
+            </div>
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              <button onClick={() => setIsModalOpen(false)}>閉じる</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginBottom: "20px", marginTop: "20px" }}>
         <h3>新しい習慣を追加</h3>
         <input
           type="text"
-          value={newTitle} // 入力フィールドの値はnewTitleステートにバインド
-          onChange={(e) => setNewTitle(e.target.value)} // 入力内容をステートに反映
-          placeholder="習慣のタイトル" // プレースホルダーに説明文
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="習慣のタイトル"
         />
-        <button onClick={handleAddHabit}>追加</button>{" "}
-        {/* ボタンを押すと習慣が追加される */}
+        <button onClick={handleAddHabit}>追加</button>
       </div>
 
-      {/* HabitListコンポーネント：習慣のリストを表示 */}
       <HabitList
-        habits={habits} // 取得した習慣のリストを渡す
-        onComplete={triggerGraphRefresh} // 完了時にグラフを更新するためのコールバック
-        userIds={[userId]} // ユーザーIDを渡す（必要に応じて使う）
+        habits={habits}
+        onComplete={triggerGraphRefresh}
+        userIds={[userId]}
       />
     </div>
   );

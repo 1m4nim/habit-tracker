@@ -6,6 +6,7 @@ import {
   query,
   where,
   Timestamp,
+  addDoc,
 } from "firebase/firestore";
 import {
   getAuth,
@@ -99,6 +100,16 @@ export type Habit = {
   title: string;
   completedDates: string[];
   userId: string;
+};
+
+export const addHabit = async (title: string, userId: string) => {
+  const docRef = await addDoc(collection(db, "habits"), {
+    title,
+    userId,
+    completedDates: [],
+    createdAt: Timestamp.now(),
+  });
+  return docRef.id;
 };
 
 // 必要なものをエクスポート
