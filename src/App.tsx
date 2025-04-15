@@ -7,11 +7,11 @@ import {
 } from "./lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import HabitList from "./components/HabitList";
-import { addHabit, getHabits } from "./lib/habit";
+import { getHabits } from "./lib/habit";
 import GraphButton from "./components/GraphButton";
 
 // `Habit`型のインポート
-import { Habit } from "./components/HabitDashboard";
+import { Habit } from "./types/Habit";
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -21,6 +21,7 @@ const App: React.FC = () => {
 
   const triggerRefresh = () => {
     setRefreshKey((prev) => !prev); // refreshKeyを切り替えて再描画
+    console.log(triggerRefresh);
   };
 
   // ユーザーのログイン状態を監視
@@ -29,7 +30,7 @@ const App: React.FC = () => {
       setUser(currentUser);
       setIsLoading(false);
       if (currentUser) {
-        const habitsData = await getHabits(currentUser.uid); // Firestoreから習慣を取得
+        const habitsData = await getHabits(); // Firestoreから習慣を取得
         setHabits(habitsData); // 取得した習慣をステートに保存
       }
     });

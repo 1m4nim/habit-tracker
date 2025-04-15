@@ -1,12 +1,13 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import WeeklyGraph from "./WeeklyGraph";
 
-type Props = {
+interface GraphButtonProps {
   userIds: string[];
-};
+  refreshKey: boolean; // refreshKeyがどこで使われるかが不明ですが、必要な場合は他のロジックで使う
+}
 
-export default function GraphButton({ userIds }: Props) {
-  const [showGraph, setShowGraph] = useState(false);
+const GraphButton: React.FC<GraphButtonProps> = ({ userIds, refreshKey }) => {
+  const [showGraph, setShowGraph] = useState(false); // showGraphの状態を追加
 
   return (
     <>
@@ -50,10 +51,13 @@ export default function GraphButton({ userIds }: Props) {
         >
           <h3 style={{ marginBottom: "8px" }}>1週間の完了率</h3>
           <div style={{ flex: 1 }}>
-            <WeeklyGraph userIds={userIds} />
+            <WeeklyGraph userIds={userIds} refreshKey={refreshKey} />{" "}
+            {/* WeeklyGraphにrefreshKeyを渡す */}
           </div>
         </div>
       )}
     </>
   );
-}
+};
+
+export default GraphButton;

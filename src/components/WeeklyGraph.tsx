@@ -100,7 +100,15 @@ const WeeklyGraph: React.FC<WeeklyGraphProps> = ({
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="date" stroke="#000" />
+        <XAxis
+          dataKey="date"
+          stroke="#000"
+          tickFormatter={(dateStr) => {
+            const date = new Date(dateStr);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+          }}
+        />
+
         <YAxis domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} />
         <Tooltip formatter={(value) => `${value}%`} />
         <Bar dataKey="completionRate" fill="#4CAF50" />

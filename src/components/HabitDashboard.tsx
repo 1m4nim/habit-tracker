@@ -3,15 +3,7 @@ import { getHabits, addHabit, getCurrentUserId } from "../lib/firebase";
 import HabitList from "./HabitList";
 import WeeklyGraph from "./WeeklyGraph";
 import { Timestamp } from "firebase/firestore";
-
-// Firestoreの習慣データ型
-export type Habit = {
-  id: string;
-  title: string;
-  completedDates: string[];
-  userId: string;
-  createdAt: Date;
-};
+import { Habit } from "../types/Habit";
 
 const HabitDashboard = () => {
   const [habits, setHabits] = useState<Habit[]>([]);
