@@ -4,6 +4,11 @@
 - 学習のため
 - 私自身がすごく三日坊主の人間なのでやったかやってないかをグラフ化することでモチベーションアップにつなげようかな、という目的です
 
+## 一旦の完成形
+https://habit-tracker-xi-ten.vercel.app/
+
+ここから下は進捗です
+
 ## 現在（2025/04/12）
 ![image](https://github.com/user-attachments/assets/6a129ad5-95a9-43aa-8133-e6939a5c616e)
 ![image](https://github.com/user-attachments/assets/147ef940-d71a-4284-bbf8-9e51db5a2d77)
@@ -30,3 +35,9 @@
 ### 現在(2025/04/14)
 ![image](https://github.com/user-attachments/assets/8bbaa997-9da8-47c5-8935-0933ae6ebbec)
 ![image](https://github.com/user-attachments/assets/82e55c0a-cc8a-4b64-ac90-85843cf921e9)
+
+### 現在（2025/04/15）
+![image](https://github.com/user-attachments/assets/5dd1e7a7-35ad-462b-8b08-720ff8482335)
+
+
+一旦ここまでの完成でストップします。
